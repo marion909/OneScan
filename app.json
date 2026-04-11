@@ -25,13 +25,13 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.onescan.app",
+      "bundleIdentifier": "com.neuhauser.onescan",
       "infoPlist": {
         "NSCameraUsageDescription": "OneScan benötigt Kamerazugriff für QR-Code-Scan und Dokumentaufnahme."
       }
     },
     "android": {
-      "package": "com.onescan.app",
+      "package": "com.neuhauser.onescan",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -40,11 +40,19 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.INTERNET"
+        "android.permission.INTERNET",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "aadf96f0-262f-48e0-9a73-3510525c1727"
+      }
+    },
+    "owner": "marion808"
   }
 }
