@@ -1,0 +1,9 @@
+{
+  "platforms": ["ios", "android"],
+  "ios": {
+    "modules": ["SmbWriterModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.smbwriter.SmbWriterModule"]
+  }
+}

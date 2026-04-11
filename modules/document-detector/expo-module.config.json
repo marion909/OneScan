@@ -1,0 +1,9 @@
+{
+  "platforms": ["ios", "android"],
+  "ios": {
+    "modules": ["DocumentDetectorModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.documentdetector.DocumentDetectorModule"]
+  }
+}
