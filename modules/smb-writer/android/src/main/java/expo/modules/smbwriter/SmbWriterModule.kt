@@ -1,6 +1,7 @@
 package expo.modules.smbwriter
 
 import android.util.Base64
+import android.util.Log
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import kotlinx.coroutines.Dispatchers
@@ -64,7 +65,7 @@ private class SmbClient(
   // ─── Öffentliche API ───────────────────────────────────────────────────
 
   fun testConnection(): Boolean {
-    return try {
+    try {
       Socket(InetAddress.getByName(server), 445).use { socket ->
         socket.soTimeout = 10_000
         val inp = socket.getInputStream()
@@ -72,10 +73,11 @@ private class SmbClient(
         negotiate(inp, out)
         sessionSetup(inp, out)
         treeConnect(inp, out)
-        true
+        return true
       }
     } catch (e: Exception) {
-      false
+      Log.e("SmbWriter", "testConnection failed: ${e.javaClass.simpleName}: ${e.message}", e)
+      throw RuntimeException("SMB-Verbindung fehlgeschlagen: ${e.javaClass.simpleName}: ${e.message}")
     }
   }
 

@@ -36,17 +36,24 @@ export default function SettingsScreen() {
   const update = (key: keyof UNCSettings) => (val: string) =>
     setForm(prev => ({ ...prev, [key]: val }));
 
+  const [testError, setTestError] = useState('');
+
+  const update = (key: keyof UNCSettings) => (val: string) =>
+    setForm(prev => ({ ...prev, [key]: val }));
+
   const handleTest = async () => {
     if (!form.uncPath.trim()) {
       Alert.alert('Pflichtfeld', 'Bitte UNC-Pfad eingeben.');
       return;
     }
     setTestStatus('testing');
+    setTestError('');
     try {
-      const ok = await testConnection(form);
-      setTestStatus(ok ? 'success' : 'failure');
-    } catch {
+      await testConnection(form);
+      setTestStatus('success');
+    } catch (e) {
       setTestStatus('failure');
+      setTestError(e instanceof Error ? e.message : String(e));
     }
   };
 
@@ -160,7 +167,7 @@ export default function SettingsScreen() {
           <View style={[styles.statusBox, styles.statusError]}>
             <Text style={styles.statusErrorText}>
               ✕ Verbindung fehlgeschlagen{'\n'}
-              Prüfe Pfad, Zugangsdaten und Netzwerk (Port 445).
+              {testError || 'Prüfe Pfad, Zugangsdaten und Netzwerk (Port 445).'}
             </Text>
           </View>
         )}
