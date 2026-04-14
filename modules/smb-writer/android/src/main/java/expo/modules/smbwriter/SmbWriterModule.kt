@@ -7,6 +7,9 @@ import expo.modules.kotlin.modules.ModuleDefinition
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+import java.security.Security
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+
 import com.hierynomus.msdtyp.AccessMask
 import com.hierynomus.msfscc.FileAttributes
 import com.hierynomus.mssmb2.SMB2CreateDisposition
@@ -18,6 +21,16 @@ import com.hierynomus.smbj.share.DiskShare
 import java.util.EnumSet
 
 class SmbWriterModule : Module() {
+
+    companion object {
+        init {
+            // Android ships a stripped BC that lacks MD4 (needed for NTLM).
+            // Replace it with the full Bouncy Castle provider.
+            Security.removeProvider("BC")
+            Security.insertProviderAt(BouncyCastleProvider(), 1)
+        }
+    }
+
     override fun definition() = ModuleDefinition {
         Name("SmbWriter")
 

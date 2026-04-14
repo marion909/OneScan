@@ -16,4 +16,5 @@ android {
 
 dependencies {
   implementation 'com.hierynomus:smbj:0.7.0'
+  implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
 }

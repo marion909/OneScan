@@ -21,6 +21,9 @@ module.exports = function withSmbProguard(config) {
         '-dontwarn com.hierynomus.**',
         '-dontwarn net.engio.**',
         '-dontwarn org.slf4j.**',
+        '# Bouncy Castle - MD4 required for NTLM authentication',
+        '-keep class org.bouncycastle.** { *; }',
+        '-keepclassmembers class org.bouncycastle.** { *; }',
         '-dontwarn org.bouncycastle.**',
         '',
       ].join('\n');

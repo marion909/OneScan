@@ -12,7 +12,7 @@ export default function RootLayout() {
         headerTitleStyle: { fontWeight: 'bold' },
       }}
     >
-      <Stack.Screen name="index" options={{ title: 'OneScan' }} />
+      <Stack.Screen name="index" options={{ title: 'OneScan', headerBackVisible: false }} />
       <Stack.Screen name="scan" options={{ title: 'Scannen', headerBackTitle: 'Zurück' }} />
       <Stack.Screen name="confirm" options={{ title: 'Bestätigen', headerBackTitle: 'Zurück' }} />
       <Stack.Screen name="settings" options={{ title: 'Einstellungen', headerBackTitle: 'Zurück' }} />

@@ -13,17 +13,17 @@ export default function ScanScreen() {
 
   const startScan = async () => {
     try {
-      const { status, scans } = await DocumentScanner.scanDocument({
+      const { status, scannedImages } = await DocumentScanner.scanDocument({
         croppedImageQuality: 100,
         maxNumDocuments: 1,
       });
 
-      if (status === 'success' && scans && scans.length > 0) {
+      if (status === 'success' && scannedImages && scannedImages.length > 0) {
         router.replace({
           pathname: '/confirm',
           params: {
             patient: params.patient,
-            imageUri: scans[0].croppedImage,
+            imageUri: scannedImages[0],
           },
         });
       } else {

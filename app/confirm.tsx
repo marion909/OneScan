@@ -30,14 +30,16 @@ export default function ConfirmScreen() {
         encoding: FileSystem.EncodingType.Base64,
       });
 
-      // Build GDT content and encode as base64
-      const gdtContent = buildGdtContent(patient);
-      const gdtBase64 = btoa(unescape(encodeURIComponent(gdtContent)));
-
       // File names
       const ts = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14);
       const jpegName = `${patient.id}_${ts}.jpg`;
       const gdtName = `${patient.id}_${ts}.gdt`;
+
+      // Build GDT with full UNC path to the JPEG
+      const uncBase = settings.uncPath.replace(/[/\\]+$/, '');
+      const jpegUncPath = `${uncBase}\\${jpegName}`;
+      const gdtContent = buildGdtContent(patient, jpegUncPath);
+      const gdtBase64 = btoa(unescape(encodeURIComponent(gdtContent)));
 
       await writeFiles(
         settings.uncPath,
@@ -51,7 +53,7 @@ export default function ConfirmScreen() {
       );
 
       Alert.alert('Erfolg', 'Dokument wurde erfolgreich übertragen.', [
-        { text: 'OK', onPress: () => router.replace('/') },
+        { text: 'OK', onPress: () => router.dismissAll() },
       ]);
     } catch (err: any) {
       Alert.alert('Fehler', err?.message ?? 'Unbekannter Fehler beim Übertragen.');
