@@ -21,6 +21,13 @@ module.exports = function withSmbProguard(config) {
         '-keepclassmembers class expo.modules.smbwriter.** { *; }',
         '-keep class expo.modules.documentdetector.** { *; }',
         '-keepclassmembers class expo.modules.documentdetector.** { *; }',
+        // SMBJ and its dependencies
+        '-keep class com.hierynomus.** { *; }',
+        '-keepclassmembers class com.hierynomus.** { *; }',
+        '-keep class net.engio.** { *; }',
+        '-dontwarn com.hierynomus.**',
+        '-dontwarn net.engio.**',
+        '-dontwarn org.slf4j.**',
       ].join('\n');
       fs.writeFileSync(rulesPath, rules);
       return config;

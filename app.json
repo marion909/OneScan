@@ -20,6 +20,7 @@
           "gradleVersion": "8.10.2"
         }
       ],
+      "./plugins/withShortBuildDirs",
       "expo-router",
       [
         "expo-camera",
@@ -45,7 +46,7 @@
     },
     "android": {
       "package": "com.neuhauser.onescan",
-      "versionCode": 5,
+      "versionCode": 8,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
