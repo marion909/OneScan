@@ -1,0 +1,7 @@
+{
+  "name": "smb-writer",
+  "version": "1.0.0",
+  "description": "Local SMB2/NTLMv2 writer module for OneScan",
+  "main": "index.ts",
+  "private": true
+}

@@ -1,0 +1,7 @@
+{
+  "name": "document-detector",
+  "version": "1.0.0",
+  "description": "Local document corner detection module for OneScan",
+  "main": "index.ts",
+  "private": true
+}

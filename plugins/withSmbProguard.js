@@ -31,9 +31,10 @@ module.exports = function withSmbProguard(config) {
   config = withAppBuildGradle(config, (config) => {
     const contents = config.modResults.contents;
     if (!contents.includes('proguard-smb-rules.pro')) {
+      // Match any proguardFiles line in the release block regardless of quotes/filename variant
       config.modResults.contents = contents.replace(
-        /proguardFiles getDefaultProguardFile\('proguard-android-optimize\.txt'\), 'proguard-rules\.pro'/g,
-        "proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'proguard-smb-rules.pro'"
+        /(proguardFiles\s[^\n]+proguard-rules\.pro[^\n]*)/,
+        "$1, 'proguard-smb-rules.pro'"
       );
     }
     return config;
