@@ -1,42 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { Slot, useRouter } from 'expo-router';
-import { isConfigured } from '../services/settingsService';
+import { Stack } from 'expo-router';
+import { useColorScheme } from 'react-native';
 
 export default function RootLayout() {
-  const router = useRouter();
-  const [checking, setChecking] = useState(true);
+  const colorScheme = useColorScheme();
 
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      const configured = await isConfigured();
-      if (!active) return;
-      setChecking(false);
-      if (!configured) {
-        // Beim ersten Start direkt zu den Einstellungen weiterleiten
-        router.replace('/settings');
-      }
-    })();
-    return () => { active = false; };
-  }, []);
-
-  if (checking) {
-    return (
-      <View style={styles.loading}>
-        <ActivityIndicator size="large" color="#005EB8" />
-      </View>
-    );
-  }
-
-  return <Slot />;
+  return (
+    <Stack
+      screenOptions={{
+        headerStyle: { backgroundColor: colorScheme === 'dark' ? '#1a1a1a' : '#fff' },
+        headerTintColor: colorScheme === 'dark' ? '#fff' : '#000',
+        headerTitleStyle: { fontWeight: 'bold' },
+      }}
+    >
+      <Stack.Screen name="index" options={{ title: 'OneScan' }} />
+      <Stack.Screen name="scan" options={{ title: 'Scannen', headerBackTitle: 'Zurück' }} />
+      <Stack.Screen name="confirm" options={{ title: 'Bestätigen', headerBackTitle: 'Zurück' }} />
+      <Stack.Screen name="settings" options={{ title: 'Einstellungen', headerBackTitle: 'Zurück' }} />
+    </Stack>
+  );
 }
-
-const styles = StyleSheet.create({
-  loading: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5F7FA',
-  },
-});
