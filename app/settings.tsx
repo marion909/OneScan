@@ -23,6 +23,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const [form, setForm] = useState<UNCSettings>(EMPTY_SETTINGS);
   const [testStatus, setTestStatus] = useState<TestStatus>('idle');
+  const [testError, setTestError] = useState('');
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
@@ -32,11 +33,6 @@ export default function SettingsScreen() {
       setLoaded(true);
     });
   }, []);
-
-  const update = (key: keyof UNCSettings) => (val: string) =>
-    setForm(prev => ({ ...prev, [key]: val }));
-
-  const [testError, setTestError] = useState('');
 
   const update = (key: keyof UNCSettings) => (val: string) =>
     setForm(prev => ({ ...prev, [key]: val }));
