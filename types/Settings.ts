@@ -3,4 +3,7 @@ export interface Settings {
   username: string;
   password: string;
   domain?: string;
+  gdtInputUncPath?: string;
+  gdtInputFileName?: string;
+  demoMode?: boolean;
 }

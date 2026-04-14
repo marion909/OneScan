@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, ActivityIndicator, Switch } from 'react-native';
 import { loadSettings, saveSettings } from '../services/settingsService';
 import { Settings } from '../types/Settings';
 import { testConnection } from '../modules/smb-writer';
@@ -9,6 +9,9 @@ export default function SettingsScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [domain, setDomain] = useState('');
+  const [gdtInputUncPath, setGdtInputUncPath] = useState('');
+  const [gdtInputFileName, setGdtInputFileName] = useState('');
+  const [demoMode, setDemoMode] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -19,6 +22,9 @@ export default function SettingsScreen() {
         setUsername(s.username);
         setPassword(s.password);
         setDomain(s.domain ?? '');
+        setGdtInputUncPath(s.gdtInputUncPath ?? '');
+        setGdtInputFileName(s.gdtInputFileName ?? '');
+        setDemoMode(s.demoMode ?? false);
       }
     });
   }, []);
@@ -35,6 +41,9 @@ export default function SettingsScreen() {
         username: username.trim(),
         password: password.trim(),
         domain: domain.trim() || undefined,
+        gdtInputUncPath: gdtInputUncPath.trim() || undefined,
+        gdtInputFileName: gdtInputFileName.trim() || undefined,
+        demoMode,
       };
       await saveSettings(settings);
       Alert.alert('Gespeichert', 'Einstellungen wurden gespeichert.');
@@ -67,9 +76,12 @@ export default function SettingsScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.sectionTitle}>SMB-Freigabe</Text>
 
-      <Text style={styles.label}>UNC-Pfad *</Text>
+      {/* ── GDT-Ausgabe ── */}
+      <Text style={styles.sectionTitle}>GDT-Ausgabe (AIS)</Text>
+      <Text style={styles.sectionHint}>Zielordner für gescannte Dokumente und GDT-Rückmeldungen.</Text>
+
+      <Text style={styles.label}>Ausgabe-Pfad (UNC) *</Text>
       <TextInput
         style={styles.input}
         value={uncPath}
@@ -110,12 +122,54 @@ export default function SettingsScreen() {
         autoCorrect={false}
       />
 
+      {/* ── GDT-Eingang ── */}
+      <Text style={styles.sectionTitle}>GDT-Eingang (AIS)</Text>
+      <Text style={styles.sectionHint}>Quelldatei mit Patientendaten aus dem AIS.</Text>
+
+      <Text style={styles.label}>Ordner-Pfad (UNC)</Text>
+      <TextInput
+        style={styles.input}
+        value={gdtInputUncPath}
+        onChangeText={setGdtInputUncPath}
+        placeholder="\\\\server\\freigabe\\gdt"
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
+
+      <Text style={styles.label}>Dateiname</Text>
+      <TextInput
+        style={styles.input}
+        value={gdtInputFileName}
+        onChangeText={setGdtInputFileName}
+        placeholder="TURBO.GDT"
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
+
+      {/* ── Demo-Modus ── */}
+      <Text style={styles.sectionTitle}>Demo-Modus</Text>
+      <View style={styles.demoRow}>
+        <Text style={styles.demoLabel}>Demo-Modus aktivieren</Text>
+        <Switch
+          value={demoMode}
+          onValueChange={setDemoMode}
+          trackColor={{ false: '#ccc', true: '#FF9500' }}
+          thumbColor="#fff"
+        />
+      </View>
+      {demoMode && (
+        <Text style={styles.demoHint}>
+          Aktiv: QR-Scan und GDT-Einlesen liefern Testdaten. Es werden keine Dateien übertragen.
+        </Text>
+      )}
+
+      {/* ── Aktionen ── */}
       {isSaving || isTesting ? (
         <ActivityIndicator size="large" color="#007AFF" style={styles.spinner} />
       ) : (
         <>
           <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-            <Text style={styles.saveButtonText}>Speichern</Text>
+            <Text style={styles.saveButtonText}>Einstellungen speichern</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.testButton} onPress={handleTest}>
@@ -137,7 +191,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: '#333',
-    marginBottom: 8,
+    marginBottom: 2,
+    marginTop: 32,
+  },
+  sectionHint: {
+    fontSize: 13,
+    color: '#888',
+    marginBottom: 4,
+    lineHeight: 18,
   },
   label: {
     fontSize: 14,
@@ -180,5 +241,27 @@ const styles = StyleSheet.create({
   testButtonText: {
     color: '#007AFF',
     fontSize: 16,
+  },
+  demoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginTop: 8,
+  },
+  demoLabel: {
+    fontSize: 16,
+    color: '#222',
+  },
+  demoHint: {
+    fontSize: 13,
+    color: '#888',
+    marginTop: 8,
+    lineHeight: 18,
   },
 });

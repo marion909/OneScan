@@ -2,6 +2,7 @@
 
 interface SmbWriterModule {
   testConnection(uncPath: string, username: string, password: string, domain: string): Promise<boolean>;
+  readFile(uncPath: string, username: string, password: string, domain: string, fileName: string): Promise<string>;
   writeFiles(
     uncPath: string,
     username: string,
@@ -20,6 +21,10 @@ function getModule(): SmbWriterModule {
 
 export function testConnection(uncPath: string, username: string, password: string, domain: string): Promise<boolean> {
   return getModule().testConnection(uncPath, username, password, domain);
+}
+
+export function readFile(uncPath: string, username: string, password: string, domain: string, fileName: string): Promise<string> {
+  return getModule().readFile(uncPath, username, password, domain, fileName);
 }
 
 export function writeFiles(

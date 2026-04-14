@@ -1,14 +1,20 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Modal } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Modal, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Patient } from '../types/Patient';
+import { loadSettings } from '../services/settingsService';
+import { parseGdtContent } from '../services/gdtService';
+import { readFile } from '../modules/smb-writer';
+
+const DEMO_PATIENT = { id: '99001', lastName: 'Demo-Patient', firstName: 'Max', birthDate: '01011980' };
 
 export default function IndexScreen() {
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
   const [showQrScanner, setShowQrScanner] = useState(false);
   const [qrScanned, setQrScanned] = useState(false);
+  const [isLoadingGdt, setIsLoadingGdt] = useState(false);
 
   const [patientId, setPatientId] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -16,6 +22,14 @@ export default function IndexScreen() {
   const [birthDate, setBirthDate] = useState('');
 
   const handleOpenQrScanner = async () => {
+    const settings = await loadSettings();
+    if (settings?.demoMode) {
+      setPatientId(DEMO_PATIENT.id);
+      setLastName(DEMO_PATIENT.lastName);
+      setFirstName(DEMO_PATIENT.firstName);
+      setBirthDate(DEMO_PATIENT.birthDate);
+      return;
+    }
     if (!permission?.granted) {
       const result = await requestPermission();
       if (!result.granted) {
@@ -43,6 +57,44 @@ export default function IndexScreen() {
     }
   };
 
+  const handleLoadGdt = async () => {
+    setIsLoadingGdt(true);
+    try {
+      const settings = await loadSettings();
+      if (settings?.demoMode) {
+        setPatientId(DEMO_PATIENT.id);
+        setLastName(DEMO_PATIENT.lastName);
+        setFirstName(DEMO_PATIENT.firstName);
+        setBirthDate(DEMO_PATIENT.birthDate);
+        return;
+      }
+      if (!settings?.gdtInputUncPath || !settings?.gdtInputFileName) {
+        Alert.alert('Einstellungen fehlen', 'Bitte GDT-Pfad und Dateiname in den Einstellungen konfigurieren.');
+        return;
+      }
+      const content = await readFile(
+        settings.gdtInputUncPath,
+        settings.username,
+        settings.password,
+        settings.domain ?? '',
+        settings.gdtInputFileName,
+      );
+      const patient = parseGdtContent(content);
+      if (!patient.id && !patient.lastName) {
+        Alert.alert('Kein Patient', 'In der GDT-Datei wurden keine Patientendaten gefunden.');
+        return;
+      }
+      setPatientId(patient.id ?? '');
+      setLastName(patient.lastName ?? '');
+      setFirstName(patient.firstName ?? '');
+      setBirthDate(patient.birthDate ?? '');
+    } catch (err: any) {
+      Alert.alert('Fehler', err?.message ?? 'GDT-Datei konnte nicht gelesen werden.');
+    } finally {
+      setIsLoadingGdt(false);
+    }
+  };
+
   const handleScan = () => {
     if (!patientId.trim() || !lastName.trim()) {
       Alert.alert('Fehler', 'Bitte Patienten-ID und Nachname eingeben.');
@@ -62,9 +114,18 @@ export default function IndexScreen() {
   return (
     <>
       <ScrollView contentContainerStyle={styles.container}>
-        <TouchableOpacity style={styles.qrButton} onPress={handleOpenQrScanner}>
-          <Text style={styles.qrButtonText}>QR-Code scannen</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonRow}>
+          <TouchableOpacity style={[styles.qrButton, styles.rowButton]} onPress={handleOpenQrScanner}>
+            <Text style={styles.qrButtonText}>QR-Code</Text>
+          </TouchableOpacity>
+          {isLoadingGdt ? (
+            <ActivityIndicator size="small" color="#FF9500" style={styles.rowButton} />
+          ) : (
+            <TouchableOpacity style={[styles.gdtButton, styles.rowButton]} onPress={handleLoadGdt}>
+              <Text style={styles.gdtButtonText}>GDT einlesen</Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
         <Text style={styles.label}>Patienten-ID *</Text>
         <TextInput
@@ -136,13 +197,29 @@ const styles = StyleSheet.create({
     padding: 24,
     backgroundColor: '#f5f5f5',
   },
-  qrButton: {
-    backgroundColor: '#34C759',
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  rowButton: {
+    flex: 1,
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 8,
+    justifyContent: 'center',
+  },
+  qrButton: {
+    backgroundColor: '#34C759',
+  },
+  gdtButton: {
+    backgroundColor: '#FF9500',
+  },
+  gdtButtonText: {
+    color: '#fff',
+    fontSize: 17,
+    fontWeight: '700',
   },
   qrButtonText: {
     color: '#fff',

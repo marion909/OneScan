@@ -47,6 +47,30 @@ class SmbWriterModule : Module() {
             }
         }
 
+        AsyncFunction("readFile") Coroutine { uncPath: String, username: String, password: String, domain: String, fileName: String ->
+            withContext(Dispatchers.IO) {
+                val (server, shareName, subPath) = parseUncPath(uncPath)
+                val client = SMBClient()
+                client.connect(server).use { connection ->
+                    val auth = AuthenticationContext(username, password.toCharArray(), domain)
+                    val session = connection.authenticate(auth)
+                    (session.connectShare(shareName) as DiskShare).use { share ->
+                        val filePath = if (subPath.isNotEmpty()) "$subPath\\$fileName" else fileName
+                        share.openFile(
+                            filePath,
+                            EnumSet.of(AccessMask.GENERIC_READ),
+                            EnumSet.of(FileAttributes.FILE_ATTRIBUTE_NORMAL),
+                            SMB2ShareAccess.ALL,
+                            SMB2CreateDisposition.FILE_OPEN,
+                            null
+                        ).use { file ->
+                            file.inputStream.readBytes().toString(Charsets.ISO_8859_1)
+                        }
+                    }
+                }
+            }
+        }
+
         AsyncFunction("writeFiles") Coroutine {
             uncPath: String, username: String, password: String, domain: String,
             jpegBase64: String, gdtBase64: String, jpegFileName: String, gdtFileName: String ->

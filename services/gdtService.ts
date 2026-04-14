@@ -2,6 +2,27 @@ import { Patient } from '../types/Patient';
 import { GDT_FIELDS } from '../constants/GDTFields';
 
 /**
+ * Parses a GDT 2.1 file content and extracts patient data.
+ * Each line format: LLL FFFF value — first 3 chars = length, next 4 = field ID, rest = value
+ */
+export function parseGdtContent(content: string): Partial<Patient> {
+  const lines = content.split(/\r?\n/);
+  const patient: Partial<Patient> = {};
+  for (const line of lines) {
+    if (line.length < 7) continue;
+    const fieldId = line.substring(3, 7);
+    const value = line.substring(7).trim();
+    switch (fieldId) {
+      case GDT_FIELDS.PATIENT_ID:         patient.id = value; break;
+      case GDT_FIELDS.PATIENT_NAME:       patient.lastName = value; break;
+      case GDT_FIELDS.PATIENT_FIRST_NAME: patient.firstName = value; break;
+      case GDT_FIELDS.PATIENT_BIRTH_DATE: patient.birthDate = value; break;
+    }
+  }
+  return patient;
+}
+
+/**
  * Builds a GDT 2.1 "Befundübertragung" (record type 6310) string for the given patient.
  * Encoding: ISO-8859-1 (Windows-1252 compatible), line ending: CR LF.
  */

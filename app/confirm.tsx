@@ -25,6 +25,15 @@ export default function ConfirmScreen() {
         return;
       }
 
+      // Demo mode: simulate success without any real transfer
+      if (settings.demoMode) {
+        await new Promise((r) => setTimeout(r, 1200));
+        Alert.alert('Demo-Modus', 'Übertragung simuliert (kein echtes Senden).', [
+          { text: 'OK', onPress: () => router.dismissAll() },
+        ]);
+        return;
+      }
+
       // Read JPEG as base64
       const jpegBase64 = await FileSystem.readAsStringAsync(imageUri, {
         encoding: FileSystem.EncodingType.Base64,
