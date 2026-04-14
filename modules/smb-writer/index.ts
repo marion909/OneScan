@@ -20,10 +20,12 @@ interface SmbWriterNative {
   ): Promise<void>;
 }
 
-const SmbWriter = requireNativeModule<SmbWriterNative>('SmbWriter');
+function getModule(): SmbWriterNative {
+  return requireNativeModule<SmbWriterNative>('SmbWriter');
+}
 
 export async function testConnection(settings: UNCSettings): Promise<boolean> {
-  return await SmbWriter.testConnection(
+  return await getModule().testConnection(
     settings.uncPath,
     settings.username,
     settings.password,
@@ -40,7 +42,7 @@ export async function writeFiles(
 ): Promise<void> {
   // GDT Bytes → Base64 für nativen Transport
   const gdtBase64 = uint8ArrayToBase64(gdtBytes);
-  await SmbWriter.writeFiles(
+  await getModule().writeFiles(
     settings.uncPath,
     settings.username,
     settings.password,

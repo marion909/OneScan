@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "scheme": "onescan",
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -14,7 +14,12 @@
       "backgroundColor": "#ffffff"
     },
     "plugins": [
-      ["./plugins/withGradleWrapper", { "gradleVersion": "8.10.2" }],
+      [
+        "./plugins/withGradleWrapper",
+        {
+          "gradleVersion": "8.10.2"
+        }
+      ],
       "expo-router",
       [
         "expo-camera",
@@ -23,12 +28,11 @@
         }
       ],
       "expo-secure-store",
+      "./plugins/withSmbProguard",
       [
-        "expo-build-properties",
+        "react-native-document-scanner-plugin",
         {
-          "android": {
-            "extraProguardRules": "-keep class expo.modules.smbwriter.** { *; }\n-keep class expo.modules.documentdetector.** { *; }"
-          }
+          "cameraPermission": "OneScan benötigt Kamerazugriff für QR-Code-Scan und Dokumentaufnahme."
         }
       ]
     ],
@@ -41,7 +45,7 @@
     },
     "android": {
       "package": "com.neuhauser.onescan",
-      "versionCode": 4,
+      "versionCode": 5,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
