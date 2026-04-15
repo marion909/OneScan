@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Modal, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Patient } from '../types/Patient';
 import { loadSettings } from '../services/settingsService';
@@ -25,16 +26,18 @@ export default function IndexScreen() {
   const [hideGdtButton, setHideGdtButton] = useState(false);
   const [disableManualInput, setDisableManualInput] = useState(false);
 
-  // Load UI visibility settings on mount
-  useEffect(() => {
-    loadSettings().then((s) => {
-      if (s) {
-        setHideQrButton(s.hideQrButton ?? false);
-        setHideGdtButton(s.hideGdtButton ?? false);
-        setDisableManualInput(s.disableManualInput ?? false);
-      }
-    });
-  }, []);
+  // Reload UI visibility settings whenever screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadSettings().then((s) => {
+        if (s) {
+          setHideQrButton(s.hideQrButton ?? false);
+          setHideGdtButton(s.hideGdtButton ?? false);
+          setDisableManualInput(s.disableManualInput ?? false);
+        }
+      });
+    }, [])
+  );
 
   const handleOpenQrScanner = async () => {
     const settings = await loadSettings();

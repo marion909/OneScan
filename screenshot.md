@@ -228,6 +228,59 @@ Color palette (strict):
 - All icon strokes and symbols: #ffffff
 ```
 
+---
+
+## Google Play Vorstellungsgrafik (Feature Graphic) – Nano Banana 2 Prompt
+
+> Das 1024×500 px Banner, das oben im Google Play Store Listing angezeigt wird.  
+> Erscheint auch als Preview-Bild wenn ein Promo-Video hinterlegt ist.  
+> Kein Gerät/Mockup — reine Marketing-Grafik mit App-Icon und Headline.
+
+**Nano Banana 2 Prompt:**
+```
+Create a Google Play Store feature graphic banner.
+
+Output: 1024 × 500 px, PNG, no transparency, landscape orientation.
+
+Design:
+- Background: deep blue gradient, from #0a2a4a (left edge) to #1a5c9a (center) to #0d3d6b (right edge). Smooth, subtle — not harsh. No noise, no texture.
+- Left side (x: 60–420px, vertically centered):
+  App icon centered at approximately (200px, 250px):
+    - Circle or rounded-square shape, diameter ~160px, background #1a5c9a with a thin white ring (3px stroke).
+    - Inside: white stylized document icon (portrait, slightly tilted 8° clockwise, ~90×110px) with a small blue scanner badge (#0d6ebd circle, ~45px) overlapping top-right corner of the document. Badge contains white corner-bracket viewfinder symbol.
+    - No text inside the icon.
+  Below icon: app name "OneScan" in white, bold, 28pt, letter-spacing 2px, centered under the icon.
+  Below app name: tagline "Medizinische Dokumentenverwaltung" in color #a0c4e8, 14pt, centered.
+
+- Right side (x: 480–980px, vertically centered):
+  Main headline (white, bold, 52pt, left-aligned):
+    Line 1: "Scannen."
+    Line 2: "Senden."
+    Line 3: "Fertig."
+    Each word on its own line. Line height tight (~1.1).
+  Below headline (gap 20px): sub-text in #dbe8f6, 18pt, left-aligned, max 2 lines:
+    "Dokumente direkt in CGM MAXX, Turbomed"
+    "und andere AIS-Systeme übertragen."
+  Below sub-text (gap 24px): three small trust badges in a horizontal row (each: white pill, 6px radius, padding 8px 14px, background rgba(255,255,255,0.12), border 1px rgba(255,255,255,0.3)):
+    "✓ GDT 2.1"   "✓ SMB-Transfer"   "✓ QR-Code"
+    Badge text: white, 12pt bold.
+
+- Thin white horizontal divider line (1px, 60% opacity) centered vertically between left and right content, x: 440–450px.
+
+- No device mockup. No screenshots. No drop shadows on text. Clean, flat, professional.
+- Font: Inter or Roboto, no serif.
+- Overall feel: enterprise healthcare software — clean, trustworthy, modern.
+
+Color palette (strict):
+- Background gradient: #0a2a4a → #1a5c9a → #0d3d6b
+- Primary text: #ffffff
+- Secondary text/accents: #a0c4e8, #dbe8f6
+- Icon scanner badge: #0d6ebd
+- Badge background: rgba(255,255,255,0.12)
+```
+
+---
+
 **Adaptive Icon (Android) – zusätzlicher Hinweis:**
 
 Das exportierte 1024×1024 PNG direkt als `foregroundImage` in `app.json` verwenden. Der bedeutsame Inhalt (Dokument + Scanner-Badge) muss innerhalb der zentralen **72dp Safe Zone** liegen — d.h. ca. in den inneren 720×720 px des 1024er Canvas. Hintergrundfarbe in `app.json`:

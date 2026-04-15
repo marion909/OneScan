@@ -26,7 +26,7 @@ export function parseGdtContent(content: string): Partial<Patient> {
  * Builds a GDT 2.1 "Befundübertragung" (record type 6310) string for the given patient.
  * Encoding: ISO-8859-1 (Windows-1252 compatible), line ending: CR LF.
  */
-export function buildGdtContent(patient: Patient, jpegFileName?: string): string {
+export function buildGdtContent(patient: Patient, jpegFileName?: string, description?: string): string {
   const today = formatDate(new Date());
   const now = formatTime(new Date());
 
@@ -40,7 +40,7 @@ export function buildGdtContent(patient: Patient, jpegFileName?: string): string
     ...(patient.birthDate ? [field(GDT_FIELDS.PATIENT_BIRTH_DATE, patient.birthDate)] : []),
     field(GDT_FIELDS.ACTIVITY_DATE, today),
     field(GDT_FIELDS.ACTIVITY_TIME, now),
-    field(GDT_FIELDS.TRANSFER_TITLE, 'Eingescanntes Dokument'),
+    field(GDT_FIELDS.TRANSFER_TITLE, description ?? 'Eingescanntes Dokument'),
     ...(jpegFileName ? [field(GDT_FIELDS.TRANSFER_FILE, jpegFileName)] : []),
   ];
 

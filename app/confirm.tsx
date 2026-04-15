@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Image, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Image, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as FileSystem from 'expo-file-system';
 import * as Print from 'expo-print';
@@ -12,6 +12,7 @@ export default function ConfirmScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ patient: string; imageUri?: string; imageUris?: string; mode?: string }>();
   const [isSending, setIsSending] = useState(false);
+  const [description, setDescription] = useState('Eingescanntes Dokument');
 
   const patient: Patient = JSON.parse(params.patient ?? '{}');
   const mode = params.mode ?? 'photo';
@@ -70,7 +71,7 @@ export default function ConfirmScreen() {
 
       const fileUncPath = `${uncBase}\\${fileName}`;
       const gdtName = `${patient.id}_${ts}.gdt`;
-      const gdtContent = buildGdtContent(patient, fileUncPath);
+      const gdtContent = buildGdtContent(patient, fileUncPath, description);
       const gdtBase64 = btoa(unescape(encodeURIComponent(gdtContent)));
 
       await writeFiles(
@@ -108,6 +109,17 @@ export default function ConfirmScreen() {
           <Text style={styles.pageBadgeText}>{pageCount} Seite{pageCount !== 1 ? 'n' : ''} · PDF</Text>
         </View>
       )}
+
+      <View style={styles.descriptionContainer}>
+        <Text style={styles.descriptionLabel}>BESCHREIBUNG</Text>
+        <TextInput
+          style={styles.descriptionInput}
+          value={description}
+          onChangeText={setDescription}
+          placeholder="Dokumentbeschreibung"
+          placeholderTextColor="#8a9aaa"
+        />
+      </View>
 
       {previewUri ? (
         <Image source={{ uri: previewUri }} style={styles.preview} resizeMode="contain" />
@@ -185,6 +197,28 @@ const styles = StyleSheet.create({
   },
   spinner: {
     marginTop: 32,
+  },
+  descriptionContainer: {
+    width: '100%',
+    marginBottom: 14,
+  },
+  descriptionLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#5a6a7a',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  descriptionInput: {
+    backgroundColor: '#f7f9fb',
+    borderWidth: 1,
+    borderColor: '#c5cdd5',
+    borderRadius: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    fontSize: 15,
+    color: '#1a2733',
   },
   confirmButton: {
     backgroundColor: '#0d6ebd',
