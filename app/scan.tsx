@@ -10,12 +10,24 @@ export default function ScanScreen() {
   const mode = params.mode ?? 'scan';
   const [permission, requestPermission] = useCameraPermissions();
   const [isCapturing, setIsCapturing] = useState(false);
+  const [permissionRequested, setPermissionRequested] = useState(false);
   const cameraRef = useRef<CameraView>(null);
 
+  // Request permission on mount for both modes, then proceed
   useEffect(() => {
-    if (mode === 'scan') {
-      startDocScan();
-    }
+    (async () => {
+      const result = await requestPermission();
+      setPermissionRequested(true);
+      if (!result.granted) {
+        Alert.alert('Berechtigung fehlt', 'Kamerazugriff wird für diese Funktion benötigt.', [
+          { text: 'OK', onPress: () => router.back() },
+        ]);
+        return;
+      }
+      if (mode === 'scan') {
+        startDocScan();
+      }
+    })();
   }, []);
 
   const startDocScan = async () => {
@@ -63,13 +75,10 @@ export default function ScanScreen() {
   };
 
   if (mode === 'photo') {
-    if (!permission?.granted) {
+    if (!permissionRequested || !permission?.granted) {
       return (
         <View style={styles.container}>
-          <Text style={styles.text}>Kamerazugriff wird benötigt.</Text>
-          <TouchableOpacity style={styles.permButton} onPress={requestPermission}>
-            <Text style={styles.permButtonText}>Berechtigung erteilen</Text>
-          </TouchableOpacity>
+          <Text style={styles.text}>Kamerazugriff wird angefragt …</Text>
         </View>
       );
     }
@@ -126,17 +135,5 @@ const styles = StyleSheet.create({
   },
   captureButtonDisabled: {
     opacity: 0.4,
-  },
-  permButton: {
-    marginTop: 16,
-    backgroundColor: '#0d6ebd',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 4,
-  },
-  permButtonText: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '600',
   },
 });
