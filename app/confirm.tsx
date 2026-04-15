@@ -51,20 +51,20 @@ export default function ConfirmScreen() {
         // Build multi-page PDF from scanned images
         const pageHtml = await Promise.all(
           imageUris.map(async (uri, i) => {
-            const b64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+            const b64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
             const breakAfter = i < imageUris.length - 1 ? 'always' : 'avoid';
             return `<div style="page-break-after:${breakAfter};margin:0;padding:0;"><img src="data:image/jpeg;base64,${b64}" style="width:100%;display:block;" /></div>`;
           })
         );
         const html = `<!DOCTYPE html><html><body style="margin:0;padding:0;">${pageHtml.join('')}</body></html>`;
         const { uri: pdfUri } = await Print.printToFileAsync({ html });
-        fileBase64 = await FileSystem.readAsStringAsync(pdfUri, { encoding: FileSystem.EncodingType.Base64 });
+        fileBase64 = await FileSystem.readAsStringAsync(pdfUri, { encoding: 'base64' });
         await FileSystem.deleteAsync(pdfUri, { idempotent: true });
         fileName = `${patient.id}_${ts}.pdf`;
       } else {
         // Single JPG
         fileBase64 = await FileSystem.readAsStringAsync(imageUri, {
-          encoding: FileSystem.EncodingType.Base64,
+          encoding: 'base64',
         });
         fileName = `${patient.id}_${ts}.jpg`;
       }

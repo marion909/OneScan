@@ -279,3 +279,124 @@ Marketing overlay:
 | Localization     | Deutsch (de-AT)                    |
 
 > 1290×2796 px (iPhone 16 Pro Max) wird für alle iPhone-Größen akzeptiert.
+
+---
+
+## 6. iPad Screenshots – Nano Banana 2 Prompts (13" iPad Pro)
+
+> Format: **2064 × 2752 px (iPad Pro 13", M4)** — Pflicht für App Store wenn iPad-Support angegeben.
+> Gerät: **iPad Pro 13" M4**, Space Black, Landscape oder Portrait.
+
+---
+
+### iPad Screenshot 1 – Hauptscreen (Landscape)
+
+**Nano Banana 2 Prompt:**
+```
+Device: iPad Pro 13-inch M4, color: Space Black, landscape orientation. Large 13-inch display, rounded corners, no home button, small centered TrueDepth camera bar top center (landscape camera pill). Ultra-wide screen.
+
+Screen content (landscape two-column layout):
+- Top navigation bar: solid #1a5c9a, white text "PATIENTENDATEN" centered uppercase bold 15pt. Right: white gear icon ⚙.
+- Screen background: #f0f2f5.
+- Content centered in a card (max-width 600px, white bg, 1px #c5cdd5 border, 8px radius, shadow-sm), vertically centered on screen.
+- Inside card:
+  - Two chips top (side-by-side, 8px gap):
+    Left "QR-Code": bg #e3effc, border 1px #0d6ebd, text #0d6ebd bold 13pt, 4px radius.
+    Right "GDT einlesen": bg #fff3e0, border 1px #e8910a, text #e8910a bold 13pt, 4px radius.
+  - 4 form fields (label uppercase 11pt #5a6a7a, input bg #f7f9fb border 1px #c5cdd5 4px radius, 16pt text):
+    "PATIENTEN-ID *" → "12345", "NACHNAME *" → "Mustermann",
+    "VORNAME" → "Max", "GEBURTSDATUM (TTMMJJJJ)" → "01011980"
+  - Divider 1px #c5cdd5.
+  - Two action buttons in row: "Dokument scannen" bg #0d6ebd white text, "Bild erstellen" bg #2e8b57 white text. Bold 15pt, 4px radius, full card width split 50/50.
+
+Marketing overlay:
+- Background: dark navy gradient #0a2a4a (top) → #1a5c9a (bottom).
+- Headline left of device (white bold 52pt): "Patientendaten in Sekunden laden"
+- Sub-text (#a0c4e8, 26pt): "Per QR-Code, GDT oder manuell"
+- Bottom badge (white pill): "✓ CGM MAXX · Turbomed · Medistar"
+```
+
+---
+
+### iPad Screenshot 2 – Dokumentenscanner
+
+**Nano Banana 2 Prompt:**
+```
+Device: iPad Pro 13-inch M4, Space Black, landscape orientation.
+
+Screen content:
+- Navigation bar: #1a5c9a, white back-arrow, "DOKUMENT SCANNEN" uppercase bold white centered.
+- Large camera viewfinder filling the screen: dark realistic preview of an A4 document on a desk.
+- Green corner brackets at document edges (automatic detection overlay), larger than phone variant.
+- Circular capture button bottom-center: outer ring white 5px 96px, inner circle #0d6ebd 72px.
+
+Marketing overlay:
+- Background: deep navy #071a2e.
+- Headline (white bold 52pt): "Automatische Kantenerkennung"
+- Sub-text (#a0c4e8, 26pt): "Bis zu 20 Seiten · mehrseitiges PDF"
+- Icon row (white 16pt): "📄 PDF · 📷 20 Seiten · ✂️ Auto-Zuschnitt"
+```
+
+---
+
+### iPad Screenshot 3 – Vorschau & Senden
+
+**Nano Banana 2 Prompt:**
+```
+Device: iPad Pro 13-inch M4, Space Black, landscape orientation.
+
+Screen content (content centered card max-width 700px):
+- Navigation bar: #1a5c9a, "BESTÄTIGEN" uppercase bold white.
+- Patient banner: bg #dbe8f6, border 1px #9bbbd8, 4px radius. Label "PATIENT" #1a5c9a uppercase. Name "Mustermann, Max — ID: 12345" bold 16pt.
+- Badge: bg #0d6ebd, "3 Seiten · PDF" white 13pt.
+- Description label "BESCHREIBUNG" + input field value "Eingescanntes Dokument".
+- Document preview card showing a clean scan of a medical document.
+- "Senden" button: full card width, solid #0d6ebd, white bold. Below: outlined "Erneut scannen".
+
+Marketing overlay:
+- Background: gradient #1a5c9a → #0d3d6b.
+- Headline (white bold 52pt): "Direkt in Ihr AIS"
+- Sub-text (#dbe8f6, 26pt): "GDT-Rückmeldung automatisch erstellt"
+- Badges: "🔒 Verschlüsselt · 📁 SMB · ✓ GDT 2.1" (white 14pt)
+```
+
+---
+
+### iPad Screenshot 4 – Einstellungen
+
+**Nano Banana 2 Prompt:**
+```
+Device: iPad Pro 13-inch M4, Space Black, landscape orientation.
+
+Screen content (wide settings layout, cards side-by-side in two columns where possible):
+- Navigation bar: #1a5c9a, "EINSTELLUNGEN" uppercase bold white.
+- Background: #f0f2f5.
+- Left column: SectionCard "GDT-Ausgabe (AIS)" [expanded, orange #FF9500 "→" badge]:
+  UNC-path field "\\192.168.1.10\praxis", username "praxisuser", password ●●●●●●.
+- Right column: SectionCard "GDT-Eingang (AIS)" [collapsed, orange "←" badge] stacked above SectionCard "Oberfläche" [collapsed, blue #0d6ebd "☰" badge].
+- Bottom bar: "Verbindung testen" outlined #0d6ebd | "Einstellungen speichern" solid #0d6ebd.
+
+Marketing overlay:
+- Background: gradient #f0f2f5 (left) → #1a5c9a (right), subtle.
+- Headline (#1a2733 bold 52pt): "Einmalig einrichten"
+- Sub-text (#5a6a7a, 26pt): "SMB, GDT-Schnittstelle & Zugangsdaten"
+- Bullets (16pt): "✓ Verschlüsselt · ✓ Verbindungstest · ✓ GDT ein & aus"
+```
+
+---
+
+## 7. Nano Banana Einstellungen (iPad)
+
+| Einstellung      | Wert                                      |
+|------------------|-------------------------------------------|
+| Output-Größe     | 2064 × 2752 px                            |
+| Export-Format    | PNG                                       |
+| Gerät            | iPad Pro 13-inch M4, Space Black          |
+| Orientierung     | Landscape (bevorzugt) oder Portrait       |
+| Status Bar       | Kamera-Pill oben, keine Uhrzeit           |
+| Schriftart       | SF Pro (oder Inter als Fallback)          |
+| Device Shadow    | Dezent                                    |
+| Localization     | Deutsch (de-AT)                           |
+
+> Apple verlangt mindestens 1 iPad-Screenshot wenn die App iPad-fähig ist.
+> 2064×2752 px (iPad Pro 13" M4) wird für alle iPad-Größen akzeptiert.
