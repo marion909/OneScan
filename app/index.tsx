@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Modal, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -20,6 +20,21 @@ export default function IndexScreen() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [birthDate, setBirthDate] = useState('');
+
+  const [hideQrButton, setHideQrButton] = useState(false);
+  const [hideGdtButton, setHideGdtButton] = useState(false);
+  const [disableManualInput, setDisableManualInput] = useState(false);
+
+  // Load UI visibility settings on mount
+  useEffect(() => {
+    loadSettings().then((s) => {
+      if (s) {
+        setHideQrButton(s.hideQrButton ?? false);
+        setHideGdtButton(s.hideGdtButton ?? false);
+        setDisableManualInput(s.disableManualInput ?? false);
+      }
+    });
+  }, []);
 
   const handleOpenQrScanner = async () => {
     const settings = await loadSettings();
@@ -95,83 +110,102 @@ export default function IndexScreen() {
     }
   };
 
-  const handleScan = () => {
+  const getPatient = (): Patient | null => {
     if (!patientId.trim() || !lastName.trim()) {
       Alert.alert('Fehler', 'Bitte Patienten-ID und Nachname eingeben.');
-      return;
+      return null;
     }
-
-    const patient: Patient = {
+    return {
       id: patientId.trim(),
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       birthDate: birthDate.trim(),
     };
+  };
 
-    router.push({ pathname: '/scan', params: { patient: JSON.stringify(patient) } });
+  const handleScanDoc = () => {
+    const patient = getPatient();
+    if (!patient) return;
+    router.push({ pathname: '/scan', params: { patient: JSON.stringify(patient), mode: 'scan' } });
+  };
+
+  const handlePhoto = () => {
+    const patient = getPatient();
+    if (!patient) return;
+    router.push({ pathname: '/scan', params: { patient: JSON.stringify(patient), mode: 'photo' } });
   };
 
   return (
     <>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.buttonRow}>
-          <TouchableOpacity style={[styles.qrButton, styles.rowButton]} onPress={handleOpenQrScanner}>
-            <Text style={styles.qrButtonText}>QR-Code</Text>
-          </TouchableOpacity>
-          {isLoadingGdt ? (
-            <ActivityIndicator size="small" color="#FF9500" style={styles.rowButton} />
-          ) : (
-            <TouchableOpacity style={[styles.gdtButton, styles.rowButton]} onPress={handleLoadGdt}>
-              <Text style={styles.gdtButtonText}>GDT einlesen</Text>
+          {!hideQrButton && (
+            <TouchableOpacity style={[styles.qrButton, styles.rowButton]} onPress={handleOpenQrScanner}>
+              <Text style={styles.qrButtonText}>QR-Code</Text>
             </TouchableOpacity>
+          )}
+          {!hideGdtButton && (
+            isLoadingGdt ? (
+              <ActivityIndicator size="small" color="#FF9500" style={styles.rowButton} />
+            ) : (
+              <TouchableOpacity style={[styles.gdtButton, styles.rowButton]} onPress={handleLoadGdt}>
+                <Text style={styles.gdtButtonText}>GDT einlesen</Text>
+              </TouchableOpacity>
+            )
           )}
         </View>
 
         <Text style={styles.label}>Patienten-ID *</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, disableManualInput && styles.inputDisabled]}
           value={patientId}
           onChangeText={setPatientId}
           placeholder="z.B. 123456"
           keyboardType="numeric"
           autoCapitalize="none"
+          editable={!disableManualInput}
         />
 
         <Text style={styles.label}>Nachname *</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, disableManualInput && styles.inputDisabled]}
           value={lastName}
           onChangeText={setLastName}
           placeholder="Mustermann"
           autoCapitalize="words"
+          editable={!disableManualInput}
         />
 
         <Text style={styles.label}>Vorname</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, disableManualInput && styles.inputDisabled]}
           value={firstName}
           onChangeText={setFirstName}
           placeholder="Max"
           autoCapitalize="words"
+          editable={!disableManualInput}
         />
 
         <Text style={styles.label}>Geburtsdatum (TTMMJJJJ)</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, disableManualInput && styles.inputDisabled]}
           value={birthDate}
           onChangeText={setBirthDate}
           placeholder="01011980"
           keyboardType="numeric"
           maxLength={8}
+          editable={!disableManualInput}
         />
 
-        <TouchableOpacity style={styles.scanButton} onPress={handleScan}>
-          <Text style={styles.scanButtonText}>Dokument scannen</Text>
-        </TouchableOpacity>
+        <View style={styles.actionRow}>
+          <TouchableOpacity style={[styles.actionButton, styles.scanDocButton]} onPress={handleScanDoc}>
+            <Text style={styles.actionButtonText}>Dokument scannen</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.actionButton, styles.photoButton]} onPress={handlePhoto}>
+            <Text style={styles.actionButtonText}>Bild erstellen</Text>
+          </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity style={styles.settingsButton} onPress={() => router.push('/settings')}>
-          <Text style={styles.settingsButtonText}>Einstellungen</Text>
-        </TouchableOpacity>
       </ScrollView>
 
       <Modal visible={showQrScanner} animationType="slide" onRequestClose={() => setShowQrScanner(false)}>
@@ -194,75 +228,99 @@ export default function IndexScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 24,
-    backgroundColor: '#f5f5f5',
+    padding: 16,
+    backgroundColor: '#f0f2f5',
   },
   buttonRow: {
     flexDirection: 'row',
-    gap: 10,
-    marginTop: 8,
-    marginBottom: 8,
+    gap: 8,
+    marginBottom: 16,
   },
   rowButton: {
     flex: 1,
-    borderRadius: 10,
-    paddingVertical: 14,
+    borderRadius: 4,
+    paddingVertical: 9,
     alignItems: 'center',
     justifyContent: 'center',
   },
   qrButton: {
-    backgroundColor: '#34C759',
+    backgroundColor: '#e3effc',
+    borderWidth: 1,
+    borderColor: '#0d6ebd',
   },
   gdtButton: {
-    backgroundColor: '#FF9500',
+    backgroundColor: '#fff3e0',
+    borderWidth: 1,
+    borderColor: '#e8910a',
   },
   gdtButtonText: {
-    color: '#fff',
-    fontSize: 17,
+    color: '#e8910a',
+    fontSize: 13,
     fontWeight: '700',
   },
   qrButtonText: {
-    color: '#fff',
-    fontSize: 17,
+    color: '#0d6ebd',
+    fontSize: 13,
     fontWeight: '700',
   },
   label: {
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: '600',
-    color: '#333',
+    color: '#5a6a7a',
     marginBottom: 4,
-    marginTop: 16,
+    marginTop: 14,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   input: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
+    backgroundColor: '#f7f9fb',
+    borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#c5cdd5',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 16,
-    color: '#222',
+    fontSize: 15,
+    color: '#1a2733',
   },
-  scanButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 10,
-    paddingVertical: 14,
+  inputDisabled: {
+    backgroundColor: '#eef0f3',
+    color: '#8a9bac',
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 28,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#c5cdd5',
+  },
+  actionButton: {
+    flex: 1,
+    borderRadius: 4,
+    paddingVertical: 13,
     alignItems: 'center',
-    marginTop: 32,
+    justifyContent: 'center',
   },
-  scanButtonText: {
+  scanDocButton: {
+    backgroundColor: '#0d6ebd',
+  },
+  photoButton: {
+    backgroundColor: '#2e8b57',
+  },
+  actionButtonText: {
     color: '#fff',
-    fontSize: 17,
+    fontSize: 14,
     fontWeight: '700',
+    letterSpacing: 0.3,
   },
   settingsButton: {
-    borderRadius: 10,
+    borderRadius: 4,
     paddingVertical: 12,
     alignItems: 'center',
     marginTop: 12,
   },
   settingsButtonText: {
-    color: '#007AFF',
+    color: '#0d6ebd',
     fontSize: 15,
   },
   scannerContainer: {
@@ -276,7 +334,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)',
     paddingHorizontal: 32,
     paddingVertical: 14,
-    borderRadius: 30,
+    borderRadius: 4,
   },
   closeButtonText: {
     color: '#fff',

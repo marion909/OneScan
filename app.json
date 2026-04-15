@@ -2,16 +2,16 @@
   "expo": {
     "name": "OneScan",
     "slug": "OneScan",
-    "version": "1.0.2",
+    "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": false,
     "scheme": "onescan",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1a5c9a"
     },
     "plugins": [
       "expo-router",
@@ -34,12 +34,15 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.neuhauser.onescan",
       "infoPlist": {
-        "NSCameraUsageDescription": "OneScan benötigt Kamerazugriff für QR-Code-Scan und Dokumentaufnahme."
+        "NSCameraUsageDescription": "OneScan benötigt Kamerazugriff für QR-Code-Scan und Dokumentaufnahme.",
+        "NSLocalNetworkUsageDescription": "OneScan benötigt Zugriff auf das lokale Netzwerk für die SMB-Dateiübertragung.",
+        "NSBonjourServices": ["_smb._tcp"],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "package": "com.neuhauser.onescan",
-      "versionCode": 17,
+      "versionCode": 20,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"

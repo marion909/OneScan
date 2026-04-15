@@ -6,4 +6,7 @@ export interface Settings {
   gdtInputUncPath?: string;
   gdtInputFileName?: string;
   demoMode?: boolean;
+  hideQrButton?: boolean;
+  hideGdtButton?: boolean;
+  disableManualInput?: boolean;
 }

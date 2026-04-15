@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, Image, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as FileSystem from 'expo-file-system';
+import * as Print from 'expo-print';
 import { Patient } from '../types/Patient';
 import { loadSettings } from '../services/settingsService';
 import { buildGdtContent } from '../services/gdtService';
@@ -9,11 +10,16 @@ import { writeFiles } from '../modules/smb-writer';
 
 export default function ConfirmScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ patient: string; imageUri: string }>();
+  const params = useLocalSearchParams<{ patient: string; imageUri?: string; imageUris?: string; mode?: string }>();
   const [isSending, setIsSending] = useState(false);
 
   const patient: Patient = JSON.parse(params.patient ?? '{}');
+  const mode = params.mode ?? 'photo';
   const imageUri = params.imageUri ?? '';
+  const imageUris: string[] = params.imageUris ? JSON.parse(params.imageUris) : [];
+
+  const previewUri = mode === 'scan' ? (imageUris[0] ?? '') : imageUri;
+  const pageCount = imageUris.length;
 
   const handleConfirm = async () => {
     setIsSending(true);
@@ -34,20 +40,37 @@ export default function ConfirmScreen() {
         return;
       }
 
-      // Read JPEG as base64
-      const jpegBase64 = await FileSystem.readAsStringAsync(imageUri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-
-      // File names
       const ts = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14);
-      const jpegName = `${patient.id}_${ts}.jpg`;
-      const gdtName = `${patient.id}_${ts}.gdt`;
-
-      // Build GDT with full UNC path to the JPEG
       const uncBase = settings.uncPath.replace(/[/\\]+$/, '');
-      const jpegUncPath = `${uncBase}\\${jpegName}`;
-      const gdtContent = buildGdtContent(patient, jpegUncPath);
+
+      let fileBase64: string;
+      let fileName: string;
+
+      if (mode === 'scan') {
+        // Build multi-page PDF from scanned images
+        const pageHtml = await Promise.all(
+          imageUris.map(async (uri, i) => {
+            const b64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+            const breakAfter = i < imageUris.length - 1 ? 'always' : 'avoid';
+            return `<div style="page-break-after:${breakAfter};margin:0;padding:0;"><img src="data:image/jpeg;base64,${b64}" style="width:100%;display:block;" /></div>`;
+          })
+        );
+        const html = `<!DOCTYPE html><html><body style="margin:0;padding:0;">${pageHtml.join('')}</body></html>`;
+        const { uri: pdfUri } = await Print.printToFileAsync({ html });
+        fileBase64 = await FileSystem.readAsStringAsync(pdfUri, { encoding: FileSystem.EncodingType.Base64 });
+        await FileSystem.deleteAsync(pdfUri, { idempotent: true });
+        fileName = `${patient.id}_${ts}.pdf`;
+      } else {
+        // Single JPG
+        fileBase64 = await FileSystem.readAsStringAsync(imageUri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        fileName = `${patient.id}_${ts}.jpg`;
+      }
+
+      const fileUncPath = `${uncBase}\\${fileName}`;
+      const gdtName = `${patient.id}_${ts}.gdt`;
+      const gdtContent = buildGdtContent(patient, fileUncPath);
       const gdtBase64 = btoa(unescape(encodeURIComponent(gdtContent)));
 
       await writeFiles(
@@ -55,9 +78,9 @@ export default function ConfirmScreen() {
         settings.username,
         settings.password,
         settings.domain ?? '',
-        jpegBase64,
+        fileBase64,
         gdtBase64,
-        jpegName,
+        fileName,
         gdtName,
       );
 
@@ -73,16 +96,25 @@ export default function ConfirmScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.patientInfo}>
-        {patient.lastName}, {patient.firstName} — {patient.id}
-      </Text>
+      <View style={styles.patientBanner}>
+        <Text style={styles.patientBannerLabel}>PATIENT</Text>
+        <Text style={styles.patientInfo}>
+          {patient.lastName}, {patient.firstName} — ID: {patient.id}
+        </Text>
+      </View>
 
-      {imageUri ? (
-        <Image source={{ uri: imageUri }} style={styles.preview} resizeMode="contain" />
+      {mode === 'scan' && pageCount > 0 && (
+        <View style={styles.pageBadge}>
+          <Text style={styles.pageBadgeText}>{pageCount} Seite{pageCount !== 1 ? 'n' : ''} · PDF</Text>
+        </View>
+      )}
+
+      {previewUri ? (
+        <Image source={{ uri: previewUri }} style={styles.preview} resizeMode="contain" />
       ) : null}
 
       {isSending ? (
-        <ActivityIndicator size="large" color="#007AFF" style={styles.spinner} />
+        <ActivityIndicator size="large" color="#0d6ebd" style={styles.spinner} />
       ) : (
         <>
           <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
@@ -102,47 +134,85 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 16,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f0f2f5',
     alignItems: 'center',
+  },
+  patientBanner: {
+    width: '100%',
+    backgroundColor: '#dbe8f6',
+    borderWidth: 1,
+    borderColor: '#9bbbd8',
+    borderRadius: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 14,
+  },
+  patientBannerLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#1a5c9a',
+    letterSpacing: 1,
+    marginBottom: 2,
+    textTransform: 'uppercase',
   },
   patientInfo: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#1a2733',
+  },
+  pageBadge: {
+    backgroundColor: '#0d6ebd',
+    borderRadius: 3,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     marginBottom: 12,
+    alignSelf: 'flex-start',
+  },
+  pageBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
   preview: {
     width: '100%',
     height: 480,
-    borderRadius: 8,
-    backgroundColor: '#e0e0e0',
-    marginBottom: 24,
+    borderRadius: 4,
+    backgroundColor: '#e8edf2',
+    borderWidth: 1,
+    borderColor: '#c5cdd5',
+    marginBottom: 20,
   },
   spinner: {
     marginTop: 32,
   },
   confirmButton: {
-    backgroundColor: '#34C759',
-    borderRadius: 10,
-    paddingVertical: 14,
+    backgroundColor: '#0d6ebd',
+    borderRadius: 4,
+    paddingVertical: 13,
     paddingHorizontal: 48,
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
     width: '100%',
   },
   confirmButtonText: {
     color: '#fff',
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: '700',
+    letterSpacing: 0.4,
   },
   cancelButton: {
-    borderRadius: 10,
+    borderRadius: 4,
     paddingVertical: 12,
     alignItems: 'center',
     width: '100%',
+    borderWidth: 1,
+    borderColor: '#0d6ebd',
   },
   cancelButtonText: {
-    color: '#007AFF',
-    fontSize: 16,
+    color: '#0d6ebd',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
+
