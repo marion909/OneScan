@@ -16,7 +16,7 @@ module.exports = function withAMSMB2Pod(config) {
         // Insert before the last 'end' in the main target block
         podfile = podfile.replace(
           /(^\s*use_expo_modules!\s*$)/m,
-          "$1\n  pod 'AMSMB2', '~> 3.0'"
+          "$1\n  pod 'AMSMB2', :git => 'https://github.com/amosavian/AMSMB2.git', :tag => '4.0.3'"
         );
         fs.writeFileSync(podfilePath, podfile);
       }
