@@ -1,81 +1,89 @@
 const { withXcodeProject } = require('@expo/config-plugins');
 
+const AMSMB2_URL = 'https://github.com/amosavian/AMSMB2';
+const AMSMB2_VERSION = '4.0.3';
+const PRODUCT_NAME = 'AMSMB2';
+
 /**
  * Adds AMSMB2 as a Swift Package Manager dependency to the Xcode project.
+ *
+ * The xcode npm package requires:
+ *  - repositoryURL to be a quoted string: '"https://..."'
+ *  - array entries as { value, comment } objects (not plain UUID strings)
+ *  - _comment sibling keys for human-readable labels in the pbxproj file
  */
 module.exports = function withAMSMB2Pod(config) {
   return withXcodeProject(config, (config) => {
     const xcodeProject = config.modResults;
+    const objects = xcodeProject.hash.project.objects;
 
-    const AMSMB2_URL = 'https://github.com/amosavian/AMSMB2';
-    const AMSMB2_VERSION = '4.0.3';
-
-    // Check if already added
-    const packages = xcodeProject.hash.project.objects['XCRemoteSwiftPackageReference'] || {};
-    const alreadyAdded = Object.values(packages).some(
-      (pkg) => typeof pkg === 'object' && pkg.repositoryURL === AMSMB2_URL
+    // Idempotency: skip if already added
+    const existingRefs = objects['XCRemoteSwiftPackageReference'] || {};
+    const alreadyAdded = Object.values(existingRefs).some(
+      (v) => typeof v === 'object' && v.repositoryURL === `"${AMSMB2_URL}"`
     );
+    if (alreadyAdded) return config;
 
-    if (!alreadyAdded) {
-      // Add remote Swift package reference
-      const packageRefId = xcodeProject.generateUuid();
-      xcodeProject.hash.project.objects['XCRemoteSwiftPackageReference'] =
-        xcodeProject.hash.project.objects['XCRemoteSwiftPackageReference'] || {};
-      xcodeProject.hash.project.objects['XCRemoteSwiftPackageReference'][packageRefId] = {
-        isa: 'XCRemoteSwiftPackageReference',
-        repositoryURL: AMSMB2_URL,
-        requirement: {
-          kind: 'exactVersion',
-          version: AMSMB2_VERSION,
-        },
-      };
+    const pkgRefId  = xcodeProject.generateUuid();
+    const prodDepId = xcodeProject.generateUuid();
+    const bfId      = xcodeProject.generateUuid();
 
-      // Add product dependency
-      const productDepId = xcodeProject.generateUuid();
-      xcodeProject.hash.project.objects['XCSwiftPackageProductDependency'] =
-        xcodeProject.hash.project.objects['XCSwiftPackageProductDependency'] || {};
-      xcodeProject.hash.project.objects['XCSwiftPackageProductDependency'][productDepId] = {
-        isa: 'XCSwiftPackageProductDependency',
-        package: packageRefId,
-        productName: 'AMSMB2',
-      };
+    // ── 1. XCRemoteSwiftPackageReference ──────────────────────────────────────
+    objects['XCRemoteSwiftPackageReference'] = objects['XCRemoteSwiftPackageReference'] || {};
+    objects['XCRemoteSwiftPackageReference'][pkgRefId] = {
+      isa: 'XCRemoteSwiftPackageReference',
+      repositoryURL: `"${AMSMB2_URL}"`,
+      requirement: { kind: 'exactVersion', version: AMSMB2_VERSION },
+    };
+    objects['XCRemoteSwiftPackageReference'][`${pkgRefId}_comment`] =
+      `XCRemoteSwiftPackageReference "${PRODUCT_NAME}"`;
 
-      // Add to main app target's packageDependencies
-      const targets = xcodeProject.hash.project.objects['PBXNativeTarget'] || {};
-      for (const [, target] of Object.entries(targets)) {
-        if (typeof target === 'object' && target.name === config.modRequest.projectName) {
-          target.packageProductDependencies = target.packageProductDependencies || [];
-          target.packageProductDependencies.push(productDepId);
+    // ── 2. XCSwiftPackageProductDependency ────────────────────────────────────
+    objects['XCSwiftPackageProductDependency'] = objects['XCSwiftPackageProductDependency'] || {};
+    objects['XCSwiftPackageProductDependency'][prodDepId] = {
+      isa: 'XCSwiftPackageProductDependency',
+      package: pkgRefId,
+      package_comment: `XCRemoteSwiftPackageReference "${PRODUCT_NAME}"`,
+      productName: PRODUCT_NAME,
+    };
+    objects['XCSwiftPackageProductDependency'][`${prodDepId}_comment`] = PRODUCT_NAME;
 
-          // Add build phase entry (PBXBuildFile)
-          const buildFileId = xcodeProject.generateUuid();
-          xcodeProject.hash.project.objects['PBXBuildFile'] =
-            xcodeProject.hash.project.objects['PBXBuildFile'] || {};
-          xcodeProject.hash.project.objects['PBXBuildFile'][buildFileId] = {
-            isa: 'PBXBuildFile',
-            productRef: productDepId,
-          };
+    // ── 3. PBXBuildFile ───────────────────────────────────────────────────────
+    objects['PBXBuildFile'] = objects['PBXBuildFile'] || {};
+    objects['PBXBuildFile'][bfId] = {
+      isa: 'PBXBuildFile',
+      productRef: prodDepId,
+      productRef_comment: PRODUCT_NAME,
+    };
+    objects['PBXBuildFile'][`${bfId}_comment`] = `${PRODUCT_NAME} in Frameworks`;
 
-          // Add to Frameworks build phase
-          const buildPhases = xcodeProject.hash.project.objects['PBXFrameworksBuildPhase'] || {};
-          for (const [, phase] of Object.entries(buildPhases)) {
-            if (typeof phase === 'object' && Array.isArray(phase.files)) {
-              phase.files.push(buildFileId);
-              break;
-            }
-          }
-          break;
-        }
+    // ── 4. PBXProject.packages ────────────────────────────────────────────────
+    for (const key of Object.keys(objects['PBXProject'] || {})) {
+      if (key.endsWith('_comment')) continue;
+      const proj = objects['PBXProject'][key];
+      if (!proj.packages) proj.packages = [];
+      proj.packages.push({
+        value: pkgRefId,
+        comment: `XCRemoteSwiftPackageReference "${PRODUCT_NAME}"`,
+      });
+    }
+
+    // ── 5. PBXNativeTarget.packageProductDependencies (app target only) ───────
+    for (const key of Object.keys(objects['PBXNativeTarget'] || {})) {
+      if (key.endsWith('_comment')) continue;
+      const target = objects['PBXNativeTarget'][key];
+      if (target.productType === '"com.apple.product-type.application"') {
+        if (!target.packageProductDependencies) target.packageProductDependencies = [];
+        target.packageProductDependencies.push({ value: prodDepId, comment: PRODUCT_NAME });
       }
+    }
 
-      // Add to project-level packages list
-      const project = xcodeProject.hash.project.objects['PBXProject'];
-      for (const [, proj] of Object.entries(project || {})) {
-        if (typeof proj === 'object') {
-          proj.packages = proj.packages || [];
-          proj.packages.push(packageRefId);
-          break;
-        }
+    // ── 6. PBXFrameworksBuildPhase.files ──────────────────────────────────────
+    for (const key of Object.keys(objects['PBXFrameworksBuildPhase'] || {})) {
+      if (key.endsWith('_comment')) continue;
+      const phase = objects['PBXFrameworksBuildPhase'][key];
+      if (Array.isArray(phase.files)) {
+        phase.files.push({ value: bfId, comment: `${PRODUCT_NAME} in Frameworks` });
       }
     }
 
