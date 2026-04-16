@@ -16,5 +16,4 @@ Pod::Spec.new do |s|
   s.source_files   = 'ios/**/*.{swift}'
 
   s.dependency 'ExpoModulesCore'
-  s.dependency 'AMSMB2'
 end
