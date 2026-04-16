@@ -155,17 +155,6 @@ module.exports = function withAMSMB2(config) {
   }]);
 };
 
-
-/**
- * Adds AMSMB2 as a Swift Package Manager dependency to the Xcode project.
- *
- * The xcode npm package requires:
- *  - repositoryURL to be a quoted string: '"https://..."'
- *  - array entries as { value, comment } objects (not plain UUID strings)
- *  - _comment sibling keys for human-readable labels in the pbxproj file
- */
-module.exports = function withAMSMB2Pod(config) {
-  return withXcodeProject(config, (config) => {
     const xcodeProject = config.modResults;
     const objects = xcodeProject.hash.project.objects;
 
